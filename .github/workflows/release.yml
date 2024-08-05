@@ -8,8 +8,7 @@ on:
 jobs:
   trigger-doc-update:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    permissions: write-all
     steps:
       - name: Checkout VAPOR repo
         uses: actions/checkout@v4
