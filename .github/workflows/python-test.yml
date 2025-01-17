@@ -1,0 +1,58 @@
+name: Test VAPOR Python API
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+
+jobs:
+  test-vapor:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Set up Anaconda
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: base
+          auto-activate-base: true
+          python-version: 3.9
+
+      # Add conda-forge channel and create an environment
+      - name: Configure Conda
+        run: |
+          conda config --add channels conda-forge
+          conda create -n vapor-env python=3.9 conda-build -y
+          conda activate vapor-env
+
+      # Build the VAPOR package from source
+      - name: Build VAPOR Package
+        working-directory: conda
+        run: |
+          DEBUG_BUILD=false MAP_IMAGES_PATH="tests/images" conda build .
+
+      # Extract the package location
+      - name: Extract Package Path
+        id: package-path
+        run: echo "package_path=$(conda build . --output)" >> $GITHUB_ENV
+        working-directory: conda
+
+      # Create a local channel and install the package
+      - name: Create Local Channel and Install Package
+        run: |
+          mkdir -p ~/channel/linux-64
+          mv ${{ env.package_path }} ~/channel/linux-64/
+          conda index ~/channel
+          conda install -c file://$HOME/channel vapor -y
+        shell: bash
+
+      # Test the installation
+      - name: Test VAPOR Installation
+        run: |
+          conda activate vapor-env
+          python -c "import vapor"
