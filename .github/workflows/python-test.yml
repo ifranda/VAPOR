@@ -15,14 +15,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # Set up Anaconda
+      # Set up Miniconda with custom directory
       - name: Set up Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniconda-version: "latest"
-          activate-environment: base
           auto-activate-base: true
+          activate-environment: base
           python-version: 3.9
+          conda-installation-directory: /tmp/miniconda3 # Specify writable directory
 
       # Add conda-forge channel and create an environment
       - name: Configure Conda
