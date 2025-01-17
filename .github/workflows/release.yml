@@ -7,7 +7,7 @@ on:
 
 jobs:
   trigger-doc-update:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout VAPOR repo
         uses: actions/checkout@v4
