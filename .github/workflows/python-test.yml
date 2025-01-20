@@ -2,52 +2,44 @@ name: Test VAPOR Python API
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test-vapor:
     runs-on: self-hosted
     steps:
-      # Checkout the repository
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      # Set up Miniconda with custom directory
-      - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v2
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
         with:
-          miniconda-version: "latest"
-          auto-activate-base: true
-          activate-environment: base
           python-version: 3.9
 
-      # Add conda-forge channel and create an environment
+      # Set up conda-forge channel and create a conda environment
       - name: Configure Conda
         run: |
           conda config --add channels conda-forge
           conda create -n vapor-env python=3.9 conda-build -y
           conda activate vapor-env
 
-      # Build the VAPOR package from source
-      - name: Build VAPOR Package
+      # Build VAPOR from source
+      - name: Build VAPOR
         working-directory: conda
         run: |
           DEBUG_BUILD=false MAP_IMAGES_PATH="tests/images" conda build .
 
       # Extract the package location
-      - name: Extract Package Path
+      - name: Extract tar file
         id: package-path
-        run: echo "package_path=$(conda build . --output)" >> $GITHUB_ENV
+        run: |
+          echo "package_path=$(conda build . --output)" >> $GITHUB_ENV
+          mkdir -p ~/channel/linux-64
+          mv ${{ env.package_path }} ~/channel/linux-64/
         working-directory: conda
 
       # Create a local channel and install the package
       - name: Create Local Channel and Install Package
         run: |
-          mkdir -p ~/channel/linux-64
-          mv ${{ env.package_path }} ~/channel/linux-64/
           conda index ~/channel
           conda install -c file://$HOME/channel vapor -y
         shell: bash
