@@ -9,11 +9,10 @@ jobs:
   test-vapor:
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: '3.13'
 
       # Set up conda-forge channel and create a conda environment
       - name: Configure Conda
